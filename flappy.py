@@ -95,99 +95,54 @@ def main():
     SOUNDS['swoosh'] = pygame.mixer.Sound('assets/audio/swoosh' + soundExt)
     SOUNDS['wing']   = pygame.mixer.Sound('assets/audio/wing' + soundExt)
 
-    while True:
-        # select random background sprites
-        randBg = random.randint(0, len(BACKGROUNDS_LIST) - 1)
-        IMAGES['background'] = pygame.image.load(BACKGROUNDS_LIST[randBg]).convert()
+    # select random background sprites
+    randBg = random.randint(0, len(BACKGROUNDS_LIST) - 1)
+    IMAGES['background'] = pygame.image.load(BACKGROUNDS_LIST[randBg]).convert()
 
-        # select random player sprites
-        randPlayer = random.randint(0, len(PLAYERS_LIST) - 1)
-        IMAGES['player'] = (
-            pygame.image.load(PLAYERS_LIST[randPlayer][0]).convert_alpha(),
-            pygame.image.load(PLAYERS_LIST[randPlayer][1]).convert_alpha(),
-            pygame.image.load(PLAYERS_LIST[randPlayer][2]).convert_alpha(),
-        )
+    # select random player sprites
+    randPlayer = random.randint(0, len(PLAYERS_LIST) - 1)
+    IMAGES['player'] = (
+        pygame.image.load(PLAYERS_LIST[randPlayer][0]).convert_alpha(),
+        pygame.image.load(PLAYERS_LIST[randPlayer][1]).convert_alpha(),
+        pygame.image.load(PLAYERS_LIST[randPlayer][2]).convert_alpha(),
+    )
 
-        # select random pipe sprites
-        pipeindex = random.randint(0, len(PIPES_LIST) - 1)
-        IMAGES['pipe'] = (
-            pygame.transform.flip(
-                pygame.image.load(PIPES_LIST[pipeindex]).convert_alpha(), False, True),
-            pygame.image.load(PIPES_LIST[pipeindex]).convert_alpha(),
-        )
+    # select random pipe sprites
+    pipeindex = random.randint(0, len(PIPES_LIST) - 1)
+    IMAGES['pipe'] = (
+        pygame.transform.flip(
+            pygame.image.load(PIPES_LIST[pipeindex]).convert_alpha(), False, True),
+        pygame.image.load(PIPES_LIST[pipeindex]).convert_alpha(),
+    )
 
-        # hismask for pipes
-        HITMASKS['pipe'] = (
-            getHitmask(IMAGES['pipe'][0]),
-            getHitmask(IMAGES['pipe'][1]),
-        )
+    # hismask for pipes
+    HITMASKS['pipe'] = (
+        getHitmask(IMAGES['pipe'][0]),
+        getHitmask(IMAGES['pipe'][1]),
+    )
 
-        # hitmask for player
-        HITMASKS['player'] = (
-            getHitmask(IMAGES['player'][0]),
-            getHitmask(IMAGES['player'][1]),
-            getHitmask(IMAGES['player'][2]),
-        )
+    # hitmask for player
+    HITMASKS['player'] = (
+        getHitmask(IMAGES['player'][0]),
+        getHitmask(IMAGES['player'][1]),
+        getHitmask(IMAGES['player'][2]),
+    )
 
-        movementInfo = showWelcomeAnimation()
-        crashInfo = mainGame(movementInfo)
-        showGameOverScreen(crashInfo)
+upperPipes = []
+lowerPipes = []
+basex = 0
+score = 0
 
+def mainGame():
+    global upperPipes
+    global lowerPipes
+    global basex
 
-def showWelcomeAnimation():
-    """Shows welcome screen animation of flappy bird"""
-    # index of player to blit on screen
-    playerIndex = 0
-    playerIndexGen = cycle([0, 1, 2, 1])
-    # iterator used to change playerIndex after every 5th iteration
-    loopIter = 0
-
-    playerx = int(SCREENWIDTH * 0.2)
-    playery = int((SCREENHEIGHT - IMAGES['player'][0].get_height()) / 2)
-
-    messagex = int((SCREENWIDTH - IMAGES['message'].get_width()) / 2)
-    messagey = int(SCREENHEIGHT * 0.12)
-
-    basex = 0
-    # amount by which base can maximum shift to left
-    baseShift = IMAGES['base'].get_width() - IMAGES['background'].get_width()
-
-    # player shm for up-down motion on welcome screen
-    playerShmVals = {'val': 0, 'dir': 1}
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
-                # make first flap sound and return values for mainGame
-                SOUNDS['wing'].play()
-                return {
-                    'playery': playery + playerShmVals['val'],
-                    'basex': basex,
-                    'playerIndexGen': playerIndexGen,
-                }
-
-        # adjust playery, playerIndex, basex
-        if (loopIter + 1) % 5 == 0:
-            playerIndex = next(playerIndexGen)
-        loopIter = (loopIter + 1) % 30
-        basex = -((-basex + 4) % baseShift)
-        playerShm(playerShmVals)
-
-        # draw sprites
-        SCREEN.blit(IMAGES['background'], (0,0))
-        SCREEN.blit(IMAGES['player'][playerIndex],
-                    (playerx, playery + playerShmVals['val']))
-        SCREEN.blit(IMAGES['message'], (messagex, messagey))
-        SCREEN.blit(IMAGES['base'], (basex, BASEY))
-
-        pygame.display.update()
-        FPSCLOCK.tick(FPS)
-
-
-def mainGame(movementInfo):
+    movementInfo = {
+        'playery': 200,
+        'basex': 0,
+        'playerIndexGen': cycle([0, 1, 2, 1]),
+    }
     score = playerIndex = loopIter = 0
     playerIndexGen = movementInfo['playerIndexGen']
     playerx, playery = int(SCREENWIDTH * 0.2), movementInfo['playery']
@@ -224,32 +179,23 @@ def mainGame(movementInfo):
     playerFlapAcc =  -9   # players speed on flapping
     playerFlapped = False # True when player flaps
 
+    lost = False
+    action = 0
 
     while True:
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
-            if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
-                if playery > -2 * IMAGES['player'][0].get_height():
-                    playerVelY = playerFlapAcc
-                    playerFlapped = True
-                    SOUNDS['wing'].play()
-
+        if action==1 and playery > -2 * IMAGES['player'][0].get_height():
+            playerVelY = playerFlapAcc
+            playerFlapped = True
+            
         # check for crash here
         crashTest = checkCrash({'x': playerx, 'y': playery, 'index': playerIndex},
                                upperPipes, lowerPipes)
         if crashTest[0]:
-            return {
-                'y': playery,
-                'groundCrash': crashTest[1],
-                'basex': basex,
-                'upperPipes': upperPipes,
-                'lowerPipes': lowerPipes,
-                'score': score,
-                'playerVelY': playerVelY,
-                'playerRot': playerRot
-            }
+            lost = True
 
         # check for score
         playerMidPos = playerx + IMAGES['player'][0].get_width() / 2
@@ -257,7 +203,7 @@ def mainGame(movementInfo):
             pipeMidPos = pipe['x'] + IMAGES['pipe'][0].get_width() / 2
             if pipeMidPos <= playerMidPos < pipeMidPos + 4:
                 score += 1
-                SOUNDS['point'].play()
+                # SOUNDS['point'].play()
 
         # playerIndex basex change
         if (loopIter + 1) % 3 == 0:
@@ -297,7 +243,10 @@ def mainGame(movementInfo):
             upperPipes.pop(0)
             lowerPipes.pop(0)
 
+        render = False
+
         # draw sprites
+        # if render:
         SCREEN.blit(IMAGES['background'], (0,0))
 
         for uPipe, lPipe in zip(upperPipes, lowerPipes):
@@ -316,72 +265,18 @@ def mainGame(movementInfo):
         playerSurface = pygame.transform.rotate(IMAGES['player'][playerIndex], visibleRot)
         SCREEN.blit(playerSurface, (playerx, playery))
 
-        pygame.display.update()
-        FPSCLOCK.tick(FPS)
+        if render:
+            pygame.display.update()
+            FPSCLOCK.tick(FPS)
 
+        action = yield SCREEN, 1, lost
 
-def showGameOverScreen(crashInfo):
-    """crashes the player down ans shows gameover image"""
-    score = crashInfo['score']
-    playerx = SCREENWIDTH * 0.2
-    playery = crashInfo['y']
-    playerHeight = IMAGES['player'][0].get_height()
-    playerVelY = crashInfo['playerVelY']
-    playerAccY = 2
-    playerRot = crashInfo['playerRot']
-    playerVelRot = 7
+def render():
+    global score
+    showScore(score)
 
-    basex = crashInfo['basex']
-
-    upperPipes, lowerPipes = crashInfo['upperPipes'], crashInfo['lowerPipes']
-
-    # play hit and die sounds
-    SOUNDS['hit'].play()
-    if not crashInfo['groundCrash']:
-        SOUNDS['die'].play()
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
-                if playery + playerHeight >= BASEY - 1:
-                    return
-
-        # player y shift
-        if playery + playerHeight < BASEY - 1:
-            playery += min(playerVelY, BASEY - playery - playerHeight)
-
-        # player velocity change
-        if playerVelY < 15:
-            playerVelY += playerAccY
-
-        # rotate only when it's a pipe crash
-        if not crashInfo['groundCrash']:
-            if playerRot > -90:
-                playerRot -= playerVelRot
-
-        # draw sprites
-        SCREEN.blit(IMAGES['background'], (0,0))
-
-        for uPipe, lPipe in zip(upperPipes, lowerPipes):
-            SCREEN.blit(IMAGES['pipe'][0], (uPipe['x'], uPipe['y']))
-            SCREEN.blit(IMAGES['pipe'][1], (lPipe['x'], lPipe['y']))
-
-        SCREEN.blit(IMAGES['base'], (basex, BASEY))
-        showScore(score)
-
-        
-
-
-        playerSurface = pygame.transform.rotate(IMAGES['player'][1], playerRot)
-        SCREEN.blit(playerSurface, (playerx,playery))
-        SCREEN.blit(IMAGES['gameover'], (50, 180))
-
-        FPSCLOCK.tick(FPS)
-        pygame.display.update()
-
+    pygame.display.update()
+    FPSCLOCK.tick(FPS)
 
 def playerShm(playerShm):
     """oscillates the value of playerShm['val'] between 8 and -8"""
@@ -482,6 +377,3 @@ def getHitmask(image):
         for y in xrange(image.get_height()):
             mask[x].append(bool(image.get_at((x,y))[3]))
     return mask
-
-if __name__ == '__main__':
-    main()
