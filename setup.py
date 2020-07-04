@@ -1,36 +1,22 @@
-import os
-import sys
-from distutils.core import setup
+from setuptools import setup, find_packages
 
-import py2exe
-
-origIsSystemDLL = py2exe.build_exe.isSystemDLL
-def isSystemDLL(pathname):
-    dlls = ("libfreetype-6.dll", "libogg-0.dll", "sdl_ttf.dll")
-    if os.path.basename(pathname).lower() in dlls:
-        return 0
-    return origIsSystemDLL(pathname)
-py2exe.build_exe.isSystemDLL = isSystemDLL
-
-sys.argv.append('py2exe')
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 setup(
-    name =    'Flappy Bird',
-    version = '1.0',
-    author =  'Sourabh Verma',
-    options = {
-        'py2exe': {
-            'bundle_files': 1, # doesn't work on win64
-            'compressed': True,
-        }
-    },
-
-    windows = [{
-        'script': "flappy.py",
-        'icon_resources': [
-            (1, 'flappy.ico')
-        ]
-    }],
-
-    zipfile=None,
+    name='FlapPyBird-Env',
+    version='0.1',
+    author='Marek Pokropiński',
+    author_email='marek.pokropinski@outlook.com',
+    description='Flappy Bird Environment for Gym',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/MarekPokropinski/FlapPyBird",
+    packages=find_packages(),
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+    python_requires='>=3.7',
 )
