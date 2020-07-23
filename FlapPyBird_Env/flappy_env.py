@@ -1,27 +1,33 @@
 from gym import Env
 from gym.spaces import Box, Discrete
-import flappy
-from flappy import mainGame, main
+from FlapPyBird_Env.flappy import mainGame, main, render, showScore
 import pygame
 
-# OBS_SIZE = (72, 100)
-OBS_SIZE = (64, 64)
-
 class FlappyEnv(Env):
-    def __init__(self):
+    def __init__(self, obs_size= (64, 64)):
         super().__init__()
         self.action_space = Discrete(2)
-        self.observation_space = Box(0, 1, shape=(*OBS_SIZE, 3))
+        self.observation_space = Box(0, 1, shape=(*obs_size, 3))
         self.flappy_game = None
-        self.surface = pygame.Surface(OBS_SIZE)
+        self.surface = pygame.Surface(obs_size)
+        self.screen = None
+        self.obs_size = obs_size
         main()
 
     def step(self, action):
         screen, reward, done = self.flappy_game.send(action)
+        self.screen = screen
         return self.getState(screen), reward, done, {}
 
     def render(self, mode='human', close=False):
-        flappy.render()
+        if mode =='human':
+            render()
+        else:
+            showScore()
+            rotated = pygame.transform.rotate(self.screen, 90)
+            flipped = pygame.transform.flip(rotated, False, True)
+            pixels = pygame.surfarray.pixels3d(flipped).copy()
+            return pixels
 
     def reset(self):
         self.flappy_game = mainGame()
@@ -31,7 +37,6 @@ class FlappyEnv(Env):
     def getState(self, screen):
         rect = pygame.Rect(54, 2, 288-54, 400)
         sub = screen.subsurface(rect)
-        scaled = pygame.transform.scale(sub, OBS_SIZE, self.surface)
+        self.surface = sub
         pixels = pygame.surfarray.pixels3d(self.surface).copy()
-        obs = pixels/255
-        return obs
+        return pixels

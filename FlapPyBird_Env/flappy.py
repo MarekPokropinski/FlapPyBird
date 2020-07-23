@@ -1,9 +1,12 @@
 from itertools import cycle
 import random
 import sys
+import os
+import math
 
 import pygame
 from pygame.locals import *
+import pkg_resources
 
 
 FPS = 30
@@ -16,36 +19,28 @@ IMAGES, SOUNDS, HITMASKS = {}, {}, {}
 
 # list of all possible players (tuple of 3 positions of flap)
 PLAYERS_LIST = (
-    # red bird
-    (
-        'assets/sprites/redbird-upflap.png',
-        'assets/sprites/redbird-midflap.png',
-        'assets/sprites/redbird-downflap.png',
-    ),
-    # blue bird
-    (
-        'assets/sprites/bluebird-upflap.png',
-        'assets/sprites/bluebird-midflap.png',
-        'assets/sprites/bluebird-downflap.png',
-    ),
+    # # red bird
+    # (
+    #     pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/redbird-upflap.png'),
+    #     pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/redbird-midflap.png'),
+    #     pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/redbird-downflap.png'),
+    # ),
     # yellow bird
     (
-        'assets/sprites/yellowbird-upflap.png',
-        'assets/sprites/yellowbird-midflap.png',
-        'assets/sprites/yellowbird-downflap.png',
+        pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/yellowbird-upflap.png'),
+        pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/yellowbird-midflap.png'),
+        pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/yellowbird-downflap.png'),
     ),
 )
 
 # list of backgrounds
 BACKGROUNDS_LIST = (
-    'assets/sprites/background-day.png',
-    'assets/sprites/background-night.png',
+    pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/background-day.png'),
 )
 
 # list of pipes
 PIPES_LIST = (
-    'assets/sprites/pipe-green.png',
-    'assets/sprites/pipe-red.png',
+    pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/pipe-red.png'),
 )
 
 
@@ -64,24 +59,24 @@ def main():
 
     # numbers sprites for score display
     IMAGES['numbers'] = (
-        pygame.image.load('assets/sprites/0.png').convert_alpha(),
-        pygame.image.load('assets/sprites/1.png').convert_alpha(),
-        pygame.image.load('assets/sprites/2.png').convert_alpha(),
-        pygame.image.load('assets/sprites/3.png').convert_alpha(),
-        pygame.image.load('assets/sprites/4.png').convert_alpha(),
-        pygame.image.load('assets/sprites/5.png').convert_alpha(),
-        pygame.image.load('assets/sprites/6.png').convert_alpha(),
-        pygame.image.load('assets/sprites/7.png').convert_alpha(),
-        pygame.image.load('assets/sprites/8.png').convert_alpha(),
-        pygame.image.load('assets/sprites/9.png').convert_alpha()
+        pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/0.png')).convert_alpha(),
+        pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/1.png')).convert_alpha(),
+        pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/2.png')).convert_alpha(),
+        pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/3.png')).convert_alpha(),
+        pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/4.png')).convert_alpha(),
+        pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/5.png')).convert_alpha(),
+        pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/6.png')).convert_alpha(),
+        pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/7.png')).convert_alpha(),
+        pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/8.png')).convert_alpha(),
+        pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/9.png')).convert_alpha()
     )
 
     # game over sprite
-    IMAGES['gameover'] = pygame.image.load('assets/sprites/gameover.png').convert_alpha()
+    IMAGES['gameover'] = pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/gameover.png')).convert_alpha()
     # message sprite for welcome screen
-    IMAGES['message'] = pygame.image.load('assets/sprites/message.png').convert_alpha()
+    IMAGES['message'] = pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/message.png')).convert_alpha()
     # base (ground) sprite
-    IMAGES['base'] = pygame.image.load('assets/sprites/base.png').convert_alpha()
+    IMAGES['base'] = pygame.image.load(pkg_resources.resource_filename('FlapPyBird_Env', 'assets/sprites/base.png')).convert_alpha()
 
     # sounds
     if 'win' in sys.platform:
@@ -89,11 +84,11 @@ def main():
     else:
         soundExt = '.ogg'
 
-    SOUNDS['die']    = pygame.mixer.Sound('assets/audio/die' + soundExt)
-    SOUNDS['hit']    = pygame.mixer.Sound('assets/audio/hit' + soundExt)
-    SOUNDS['point']  = pygame.mixer.Sound('assets/audio/point' + soundExt)
-    SOUNDS['swoosh'] = pygame.mixer.Sound('assets/audio/swoosh' + soundExt)
-    SOUNDS['wing']   = pygame.mixer.Sound('assets/audio/wing' + soundExt)
+    # SOUNDS['die']    = pygame.mixer.Sound('assets/audio/die' + soundExt)
+    # SOUNDS['hit']    = pygame.mixer.Sound('assets/audio/hit' + soundExt)
+    # SOUNDS['point']  = pygame.mixer.Sound('assets/audio/point' + soundExt)
+    # SOUNDS['swoosh'] = pygame.mixer.Sound('assets/audio/swoosh' + soundExt)
+    # SOUNDS['wing']   = pygame.mixer.Sound('assets/audio/wing' + soundExt)
 
     # select random background sprites
     randBg = random.randint(0, len(BACKGROUNDS_LIST) - 1)
@@ -131,12 +126,13 @@ def main():
 upperPipes = []
 lowerPipes = []
 basex = 0
-score = 0
+
 
 def mainGame():
     global upperPipes
     global lowerPipes
     global basex
+    global score
 
     movementInfo = {
         'playery': 200,
@@ -183,6 +179,7 @@ def mainGame():
     action = 0
 
     while True:
+        reward = 0.0
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
@@ -196,6 +193,16 @@ def mainGame():
                                upperPipes, lowerPipes)
         if crashTest[0]:
             lost = True
+            # print('crash!1')
+            if not crashTest[1]:
+                # r = 10*math.exp(-((crashTest[2]-playery)/50)**2)                
+                r = -abs((crashTest[2]-playery)/50)
+                reward += r
+            else:
+                reward -= 10
+                # print(playery, crashTest[2], crashTest[2]-playery)
+                # print('crash!2')
+
 
         # check for score
         playerMidPos = playerx + IMAGES['player'][0].get_width() / 2
@@ -203,6 +210,7 @@ def mainGame():
             pipeMidPos = pipe['x'] + IMAGES['pipe'][0].get_width() / 2
             if pipeMidPos <= playerMidPos < pipeMidPos + 4:
                 score += 1
+                reward += 10
                 # SOUNDS['point'].play()
 
         # playerIndex basex change
@@ -243,10 +251,8 @@ def mainGame():
             upperPipes.pop(0)
             lowerPipes.pop(0)
 
-        render = False
 
         # draw sprites
-        # if render:
         SCREEN.blit(IMAGES['background'], (0,0))
 
         for uPipe, lPipe in zip(upperPipes, lowerPipes):
@@ -255,7 +261,7 @@ def mainGame():
 
         SCREEN.blit(IMAGES['base'], (basex, BASEY))
         # print score so player overlaps the score
-        showScore(score)
+        # showScore(score)
 
         # Player rotation has a threshold
         visibleRot = playerRotThr
@@ -265,16 +271,10 @@ def mainGame():
         playerSurface = pygame.transform.rotate(IMAGES['player'][playerIndex], visibleRot)
         SCREEN.blit(playerSurface, (playerx, playery))
 
-        if render:
-            pygame.display.update()
-            FPSCLOCK.tick(FPS)
-
-        action = yield SCREEN, 1, lost
+        action = yield SCREEN, reward, lost
 
 def render():
-    global score
-    showScore(score)
-
+    showScore()
     pygame.display.update()
     FPSCLOCK.tick(FPS)
 
@@ -303,8 +303,9 @@ def getRandomPipe():
     ]
 
 
-def showScore(score):
+def showScore():
     """displays score in center of screen"""
+    global score
     scoreDigits = [int(x) for x in list(str(score))]
     totalWidth = 0 # total width of all numbers to be printed
 
@@ -326,7 +327,7 @@ def checkCrash(player, upperPipes, lowerPipes):
 
     # if player crashes into ground
     if player['y'] + player['h'] >= BASEY - 1:
-        return [True, True]
+        return [True, True, None]
     else:
 
         playerRect = pygame.Rect(player['x'], player['y'],
@@ -349,9 +350,10 @@ def checkCrash(player, upperPipes, lowerPipes):
             lCollide = pixelCollision(playerRect, lPipeRect, pHitMask, lHitmask)
 
             if uCollide or lCollide:
-                return [True, False]
+                gap_pos = (uPipeRect.bottom + lPipeRect.top)/2
+                return [True, False, gap_pos]
 
-    return [False, False]
+    return [False, False, None]
 
 def pixelCollision(rect1, rect2, hitmask1, hitmask2):
     """Checks if two objects collide and not just their rects"""
